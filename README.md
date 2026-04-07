@@ -16,8 +16,10 @@ Open a page in any browser and it connects.
 
 The telemetry source is [KSA-Bridge](https://github.com/johnmknight/KSA-Bridge), a
 companion mod for Kitten Space Agency (KSA) — the spiritual successor to Kerbal Space
-Program. KSA-Bridge publishes 13 telemetry topics from the simulator to an MQTT broker.
-These consoles subscribe to that data and render it in real time.
+Program. KSA uses the real solar system (Earth, Moon, Mars, etc.), so these consoles
+display real-world orbital mechanics and celestial bodies. KSA-Bridge publishes 13
+telemetry topics from the simulator to an MQTT broker. These consoles subscribe to
+that data and render it in real time.
 
 ## Why This Exists
 
@@ -47,37 +49,37 @@ explained" (Ars Technica, December 24, 2019).
 
 | Position | Title | Status |
 |----------|-------|--------|
-| **BOOSTER** | Booster Systems Engineer | Planned |
-| **RETRO** | Retrofire Officer | Planned |
-| **FDO** | Flight Dynamics Officer | ✅ Working (Apollo + Hard Sci-Fi variants) |
-| **GUIDO** | Guidance Officer | Planned |
+| **BOOSTER** | Booster Systems Engineer | Stub |
+| **RETRO** | Retrofire Officer | Stub |
+| **FDO** | Flight Dynamics Officer | Working (Apollo + Hard Sci-Fi variants) |
+| **GUIDO** | Guidance Officer | Stub |
 
 ### Row 2 — Spacecraft Systems
 
 | Position | Title | Status |
 |----------|-------|--------|
-| **SURGEON** | Flight Surgeon | Planned |
-| **CAPCOM** | Capsule Communicator | Planned |
-| **EECOM** | Electrical, Environmental & Consumables | Planned |
-| **GNC** | Guidance, Navigation & Control (CM) | Planned |
-| **TELMU** | Telemetry, Electrical & EVA Mobility Unit | Planned |
-| **CONTROL** | LM Guidance, Navigation & Control | Planned |
+| **SURGEON** | Flight Surgeon | Stub |
+| **CAPCOM** | Capsule Communicator | Stub |
+| **EECOM** | Electrical, Environmental & Consumables | Stub |
+| **GNC** | Guidance, Navigation & Control (CM) | Stub |
+| **TELMU** | Telemetry, Electrical & EVA Mobility Unit | Stub |
+| **CONTROL** | LM Guidance, Navigation & Control | Stub |
 
 ### Row 3 — Support & Command
 
 | Position | Title | Status |
 |----------|-------|--------|
-| **INCO** | Instrumentation & Communications | Planned |
-| **O&P** | Operations & Procedures | Planned |
-| **FLIGHT** | Flight Director | Planned |
-| **FAO** | Flight Activities Officer | Planned |
-| **NETWORK** | Network Controller | Planned |
+| **INCO** | Instrumentation & Communications | Stub |
+| **O&P** | Operations & Procedures | Stub |
+| **FLIGHT** | Flight Director | Stub |
+| **FAO** | Flight Activities Officer | Stub |
+| **NETWORK** | Network Controller | Stub |
 
 ### Row 4 — Management & Public Relations
 
 | Position | Title | Status |
 |----------|-------|--------|
-| **PAO** | Public Affairs Officer | Planned (see also: [KSA-PAO](https://github.com/johnmknight/KSA-PAO)) |
+| **PAO** | Public Affairs Officer | Stub (see also: [KSA-PAO](https://github.com/johnmknight/KSA-PAO)) |
 
 ## Current Consoles
 
@@ -93,6 +95,27 @@ A modern variant featuring a full Three.js globe with real-time orbit rendering,
 element markers, trajectory sparklines, and comprehensive data panels. Supports light/dark
 themes, event logging, and surface data for Earth, Moon, Mars, Mercury, Jupiter, Venus,
 and Saturn.
+
+## Front-Wall Projection Screens (Stretch Goal)
+
+The five large rear-projection screens and nine chronographic clocks that dominated the
+front wall of the MOCR are documented in `docs/PROJECTION-SCREENS.md`. The design
+document covers the original projection technology (seven-projector Xenon plotting
+system, Eidophor TV projectors), 13 display modes across all Apollo mission phases,
+and a KSA implementation plan mapping each display to MQTT telemetry topics.
+
+Proposed screens include the iconic Mercator ground track map, ascent/descent trajectory
+plots with simulated scribe animation, Earth-Moon transfer schematics, and a live
+chronographic clock array.
+
+## Reference Image Collection
+
+`references/images/` contains public domain NASA photographs and diagrams of the MOCR
+consoles and displays. These serve as visual references for development and as
+educational resources. The collection includes Apollo-era mission photos, 2019
+restoration images, and annotated diagrams. All images are attributed in the folder's
+README with source, license, and date. Contributions welcome — see the naming convention
+and checklist in `references/images/README.md`.
 
 ## Running the Consoles
 
@@ -118,21 +141,37 @@ and Saturn.
 
 ```
 MOCR-Console-Replica-Suite/
+├── index.html                  # MOCR floor plan landing page (links to all consoles)
 ├── README.md
+├── VISION.md
 ├── consoles/
-│   ├── fdo/                    # Apollo FDO console
-│   │   ├── fdo-console.html
-│   │   ├── apollo-fdo-console.html
-│   │   └── lib/
-│   └── fdo-hardscifi/          # Hard Sci-Fi FDO console
-│       ├── hardscifi-fdo-console.html
-│       ├── data/               # Celestial body surface data
-│       └── lib/
+│   ├── fdo/                    # Apollo FDO console (working)
+│   ├── fdo-hardscifi/          # Hard Sci-Fi FDO console (working)
+│   ├── booster/                # Stub consoles for all other positions
+│   ├── retro/
+│   ├── guido/
+│   ├── surgeon/
+│   ├── capcom/
+│   ├── eecom/
+│   ├── gnc/
+│   ├── telmu/
+│   ├── control/
+│   ├── inco/
+│   ├── op/
+│   ├── flight/
+│   ├── fao/
+│   ├── network/
+│   └── pao/
 ├── docs/
 │   ├── apollo-mission-control-reference.md
-│   └── CONSOLES.md
-├── lib/                        # Shared libraries (future)
-└── scripts/                    # Dev tools (future)
+│   ├── CONSOLES.md             # Per-position research and telemetry mapping
+│   ├── PROJECTION-SCREENS.md   # Front-wall display design document
+│   └── PROJECTION-SCREENS.html # Styled HTML version
+├── references/
+│   └── images/                 # Public domain NASA reference photos
+│       └── README.md           # Naming convention, attribution, checklist
+└── scripts/
+    └── gen_stubs.py            # Console stub generator
 ```
 
 ## Data Source

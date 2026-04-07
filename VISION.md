@@ -92,7 +92,8 @@ pipeline, it becomes inaccessible to the people it is built for.
 The consoles subscribe to MQTT — the same lightweight publish/subscribe protocol used
 in real telemetry systems, IoT infrastructure, and industrial automation. The data
 source is KSA-Bridge, which publishes 13 telemetry topics from the Kitten Space Agency
-spaceflight simulator. But the consoles do not know or care where the data comes from.
+spaceflight simulator. KSA uses the real solar system (Earth, Moon, Mars, etc.), making
+the telemetry directly analogous to real Apollo mission data. But the consoles do not know or care where the data comes from.
 They subscribe to topics on a broker. Any system that publishes the right JSON to the
 right topics will drive every console in the suite.
 
@@ -185,7 +186,8 @@ access to primary sources can improve accuracy without requiring a rewrite.
 KSA-Bridge is the telemetry source. This project is the display layer.
 
 KSA-Bridge is a C# mod for Kitten Space Agency that reads game state and publishes it
-to an MQTT broker. It is a dumb pipe — it does not interpret, filter, or present data.
+to an MQTT broker. Because KSA uses the real solar system, the telemetry represents
+actual orbital mechanics around Earth, the Moon, and other real celestial bodies. It is a dumb pipe — it does not interpret, filter, or present data.
 The MOCR Console Replica Suite subscribes to that telemetry and renders it in
 historically-informed layouts.
 
