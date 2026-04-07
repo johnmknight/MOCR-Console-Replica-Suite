@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apollo Mission Control - Guidance, Navigation & Control (CM)</title>
+    <script src="../fdo/lib/mqtt.min.js"></script>
+    <style>
+        :root {
+            --base-font-size: clamp(14px, 2vw, 24px);
+            --header-font-size: clamp(16px, 2.5vw, 28px);
+            --padding-base: clamp(8px, 2vw, 20px);
+            --border-width: 2px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; }
+        body {
+            background-color: #000011; color: #00d4ff;
+            font-family: 'Courier New', 'Courier', monospace;
+            font-size: var(--base-font-size); line-height: 1.3; overflow: hidden;
+        }
+        .container {
+            display: flex; flex-direction: column; height: 100vh;
+            border: var(--border-width) solid #00d4ff;
+            background: linear-gradient(135deg, #000011 0%, #001133 100%);
+        }
+        .header {
+            padding: var(--padding-base);
+            border-bottom: var(--border-width) solid #00d4ff;
+            background-color: rgba(0, 20, 51, 0.95);
+            text-align: center; font-weight: bold;
+            letter-spacing: clamp(1px, 0.2vw, 3px);
+            font-size: var(--header-font-size);
+            position: relative; flex-shrink: 0;
+        }
+        .header-right {
+            position: absolute; top: var(--padding-base); right: var(--padding-base);
+            display: flex; align-items: center; gap: clamp(4px, 1vw, 10px);
+            flex-wrap: wrap; justify-content: flex-end;
+        }
+        .status-indicator {
+            display: inline-block; width: clamp(8px, 1.2vw, 14px); height: clamp(8px, 1.2vw, 14px);
+            border-radius: 50%; animation: blink 1s infinite;
+        }
+        .status-connected { background-color: #00ff00; }
+        .status-disconnected { background-color: #ff0000; }
+        @keyframes blink {
+            0%, 49%, 100% { opacity: 1; }
+            50%, 99% { opacity: 0.3; }
+        }
+        .console-wrapper {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            padding: var(--padding-base); white-space: pre-wrap; word-wrap: break-word;
+            font-family: 'Courier New', 'Courier', monospace;
+            line-height: clamp(1.3, 1.6vw, 1.8); font-size: var(--base-font-size);
+        }
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+            pointer-events: none; z-index: 1000;
+        }
+        .console-wrapper::-webkit-scrollbar { width: clamp(6px, 1.2vw, 14px); }
+        .console-wrapper::-webkit-scrollbar-track { background: rgba(0, 212, 255, 0.1); }
+        .console-wrapper::-webkit-scrollbar-thumb { background: #00d4ff; border-radius: 2px; }
+        @media (max-width: 768px) {
+            :root {
+                --base-font-size: clamp(11px, 3vw, 16px);
+                --header-font-size: clamp(13px, 3.5vw, 18px);
+                --padding-base: clamp(6px, 2.5vw, 16px);
+            }
+            .header-right { position: static; justify-content: center; margin-top: clamp(4px, 1vw, 8px); width: 100%; }
+        }
+        @media (min-width: 1920px) { .console-wrapper { column-count: 2; column-gap: clamp(20px, 3vw, 40px); } }
+        @media (min-width: 2560px) { .console-wrapper { column-count: 3; column-gap: clamp(30px, 3vw, 50px); } }
+        @media (hover: none) and (pointer: coarse) {
+            :root { --padding-base: clamp(10px, 3vw, 24px); }
+            .header-right { gap: clamp(6px, 2vw, 16px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            APOLLO MISSION CONTROL - GNC
+            <div class="header-right">
+                <span class="status-indicator status-disconnected" id="statusIndicator"></span>
+                <span id="connectionStatus">DISCONNECTED</span>
+            </div>
+        </div>
+        <div class="console-wrapper" id="consoleOutput"></div>
+    </div>
+    <div class="scanlines"></div>
+    <script>
+        // =================================================================
+        // GNC - Guidance, Navigation & Control (CM)
+        // Row 2 - Spacecraft Systems
+        //
+        // STUB CONSOLE - Position-specific data sections are placeholders.
+        // MQTT subscription is active. Vehicle, status, and MET update live.
+        // All other fields display defaults until position-specific telemetry
+        // parsing is implemented.
+        // =================================================================
+        var client = null;
+        var telemetryData = {};
+        var RAD2DEG = 180 / Math.PI;
+        function formatNumber(num, width, decimals) {
+            width = width || 8; decimals = decimals || 2;
+            if (num === undefined || num === null) return '---'.padStart(width);
+            if (isNaN(num)) return '---'.padStart(width);
+            return num.toFixed(decimals).padStart(width);
+        }
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '--:--:--';
+            var h = Math.floor(seconds / 3600);
+            var m = Math.floor((seconds % 3600) / 60);
+            var s = Math.floor(seconds % 60);
+            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+        function updateDisplay() {
+            var output = '';
+            output += 'VEH - VEHICLE\n';
+            output += '---------------------------------------------\n';
+            output += 'NAME ' + (telemetryData.vehicleName || '---').padEnd(20) + '\n';
+            output += 'STAT ' + (telemetryData.vehicleStatus || '---').padEnd(20) + '\n';
+            output += 'MASS ' + formatNumber(telemetryData.vehicleMass) + '  KG\n\n';
+            output += 'MET - MISSION ELAPSED TIME\n';
+            output += '---------------------------------------------\n';
+            output += 'TIME ' + formatTime(telemetryData.missionTime) + '\n\n';
+            output += 'RCS - REACTION CONTROL\n';
+            output += '---------------------------------------------\n';
+            output += 'QUAD A   ' + formatNumber(null) + '  PCT\n';
+            output += 'QUAD B   ' + formatNumber(null) + '  PCT\n';
+            output += 'QUAD C   ' + formatNumber(null) + '  PCT\n';
+            output += 'QUAD D   ' + formatNumber(null) + '  PCT\n';
+            output += 'THRST    ---\n';
+            output += '\n';
+            output += 'SPS - SERVICE PROPULSION\n';
+            output += '---------------------------------------------\n';
+            output += 'STATUS   ---\n';
+            output += 'FUEL     ' + formatNumber(null) + '  PCT\n';
+            output += 'OXID     ' + formatNumber(null) + '  PCT\n';
+            output += 'CHAMB P  ' + formatNumber(null) + '  PSI\n';
+            output += 'GIMBAL P ' + formatNumber(null) + '  DEG\n';
+            output += 'GIMBAL Y ' + formatNumber(null) + '  DEG\n';
+            output += '\n';
+            output += 'IMU - INERTIAL MEAS UNIT\n';
+            output += '---------------------------------------------\n';
+            output += 'STATUS   ---\n';
+            output += 'DRIFT X  ' + formatNumber(null) + '  DEG/HR\n';
+            output += 'DRIFT Y  ' + formatNumber(null) + '  DEG/HR\n';
+            output += 'DRIFT Z  ' + formatNumber(null) + '  DEG/HR\n';
+            output += '\n';
+            output += 'ATT - ATTITUDE\n';
+            output += '---------------------------------------------\n';
+            output += 'HDG      ' + formatNumber(null) + '  DEG\n';
+            output += 'PITCH    ' + formatNumber(null) + '  DEG\n';
+            output += 'ROLL     ' + formatNumber(null) + '  DEG\n';
+            output += 'RATE P   ' + formatNumber(null) + '  DEG/S\n';
+            output += 'RATE Y   ' + formatNumber(null) + '  DEG/S\n';
+            output += 'RATE R   ' + formatNumber(null) + '  DEG/S\n';
+            document.getElementById('consoleOutput').textContent = output;
+        }
+        function connectMQTT() {
+            client = mqtt.connect('ws://127.0.0.1:9001');
+            client.on('connect', function() {
+                document.getElementById('statusIndicator').className = 'status-indicator status-connected';
+                document.getElementById('connectionStatus').textContent = 'CONNECTED';
+                client.subscribe('ksa/telemetry/#');
+                client.subscribe('ksa/bridge/status');
+            });
+            client.on('message', function(topic, payload) {
+                try {
+                    var data = JSON.parse(payload.toString());
+                    if (topic.includes('vehicle')) {
+                        telemetryData.vehicleName = data.name;
+                        telemetryData.vehicleStatus = data.status;
+                        telemetryData.vehicleMass = data.mass;
+                    }
+                    else if (topic.includes('mission-time') || topic.includes('mission_time')) {
+                        telemetryData.missionTime = data.value;
+                    }
+                    // TODO: Add position-specific telemetry parsing here.
+                    updateDisplay();
+                } catch (e) { console.error('Error:', e); }
+            });
+            client.on('error', function(err) {
+                document.getElementById('statusIndicator').className = 'status-indicator status-disconnected';
+                document.getElementById('connectionStatus').textContent = 'ERROR';
+            });
+            client.on('close', function() {
+                document.getElementById('statusIndicator').className = 'status-indicator status-disconnected';
+                document.getElementById('connectionStatus').textContent = 'DISCONNECTED';
+            });
+        }
+        setTimeout(function() { connectMQTT(); updateDisplay(); }, 100);
+        window.addEventListener('beforeunload', function() { if (client) client.end(); });
+    </script>
+</body>
+</html>
