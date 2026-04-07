@@ -113,7 +113,7 @@ For each console, ideally collect:
 | FDO | [ ] | [ ] | [ ] | [ ] | [ ] |
 | GUIDO | [ ] | [ ] | [ ] | [ ] | [ ] |
 | SURGEON | [ ] | [ ] | [ ] | [ ] | [ ] |
-| CAPCOM | [ ] | [ ] | [ ] | [ ] | [ ] |
+| CAPCOM | [x] | [ ] | [ ] | [ ] | [ ] |
 | EECOM | [ ] | [ ] | [ ] | [ ] | [ ] |
 | GNC | [ ] | [ ] | [ ] | [ ] | [ ] |
 | TELMU | [ ] | [ ] | [ ] | [ ] | [ ] |
@@ -122,7 +122,7 @@ For each console, ideally collect:
 | O&P | [ ] | [ ] | [ ] | [ ] | [ ] |
 | FAO | [ ] | [ ] | [ ] | [ ] | [ ] |
 | NETWORK | [ ] | [ ] | [ ] | [ ] | [ ] |
-| FLIGHT | [ ] | [ ] | [ ] | [ ] | [ ] |
+| FLIGHT | [x] | [ ] | [ ] | [ ] | [x] |
 | PAO | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ### Front-Wall Displays
@@ -135,7 +135,7 @@ For each console, ideally collect:
 | Screen 4 (Television) | [ ] | [ ] | [ ] |
 | Screen 5 (Television) | [ ] | [ ] | [ ] |
 | Chronographic Clocks | [ ] | [ ] | [ ] |
-| Full front wall | [ ] | [ ] | [ ] |
+| Full front wall | [ ] | [ ] | [x] |
 | Bat Cave / projection room | [ ] | [ ] | [ ] |
 
 ### Display Modes (Projection Screens)
@@ -155,7 +155,16 @@ Every image added to this collection must have an entry here.
 
 | Filename | Source | License | Date | Notes |
 |----------|--------|---------|------|-------|
-| *(no images yet)* | | | | |
+| mocr-overview-apollo13.jpg | NASA (S70-35368) | Public Domain | 1970-04-17 | MOCR overview during Apollo 13 final 24 hrs, flight director console activity |
+| capcom-console-apollo11.jpg | NASA (S69-39601) | Public Domain | 1969-07-20 | CAPCOM console — Duke, Lovell, Haise during Apollo 11 lunar landing |
+| flight-console-apollo10.jpg | NASA | Public Domain | 1969-05-18 | Flight director console — Griffin, Lunney, Windler, Kraft during Apollo 10 |
+| mocr-overview-restoration.jpg | NASA (JSC2019-E-035230) | Public Domain | 2019-06-26 | Restored MOCR in final configuration, wide overview |
+| mocr-consoles-restoration.jpg | NASA (JSC2019-E-035240) | Public Domain | 2019-06-26 | Restored consoles in final configuration, detail view |
+| screen-frontwall-restoration.jpg | NASA (JSC2019-E-035077) | Public Domain | 2019-06-26 | Restored consoles with front-wall projection screens visible |
+| mocr-consoles-frontwall-restoration.jpg | NASA (JSC2019-E-035076) | Public Domain | 2019-06-26 | Consoles with documents and front displays, restored MOCR |
+| mocr-consoles-moving-restoration.jpg | NASA (JSC2019-E-032627) | Public Domain | 2019 | Consoles being moved to Building 30 during restoration |
+| mocr-controller-covington.jpg | NASA (JSC2017-E-102004) | Public Domain | 2017-07-20 | Former controller James Covington at his console position |
+| mocr-diagram-layout.jpg | Smithsonian NASM | Public Domain | Undated | Floor plan diagram of MOCR with all station positions labeled |
 
 ## Known Sources for Public Domain MOCR Images
 
