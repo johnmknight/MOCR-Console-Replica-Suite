@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOCR Projection Screen Displays — Design Document</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000011;
+    color: #c0d8e8;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 40px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+  /* CRT scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+</style>
+</head>
+<body>
+<style>
+  h1 {
+    color: #00d4ff;
+    font-size: 24px;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    border-bottom: 1px solid #00d4ff44;
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 15px #00d4ff66;
+  }
+  h1 .subtitle {
+    display: block;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: #00d4ff88;
+    margin-top: 4px;
+  }
+  .status-line {
+    color: #ffaa00;
+    font-size: 13px;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+  }
+  h2 {
+    color: #00d4ff;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-top: 40px;
+    margin-bottom: 16px;
+    padding-top: 20px;
+    border-top: 1px solid #00d4ff22;
+    text-shadow: 0 0 10px #00d4ff44;
+  }
+  h3 {
+    color: #00ff88;
+    font-size: 15px;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+</style>
+<style>
+  h4 {
+    color: #00ff88cc;
+    font-size: 14px;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+  p {
+    margin-bottom: 14px;
+  }
+  strong { color: #00d4ff; }
+  em { color: #c0d8e8aa; font-style: italic; }
+  ul, ol {
+    margin: 10px 0 14px 24px;
+  }
+  li { margin-bottom: 4px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px 0;
+    font-size: 13px;
+  }
+  th {
+    background: #00d4ff18;
+    color: #00d4ff;
+    text-align: left;
+    padding: 8px 12px;
+    border: 1px solid #00d4ff33;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+  }
+  td {
+    padding: 6px 12px;
+    border: 1px solid #00d4ff1a;
+    vertical-align: top;
+  }
+  tr:hover td {
+    background: #00d4ff08;
+  }
+</style>
+<style>
+  .confirmed { color: #00ff88; }
+  .inferred { color: #ffaa00; }
+  .mode-section {
+    background: #00d4ff06;
+    border-left: 2px solid #00d4ff33;
+    padding: 12px 16px;
+    margin: 12px 0 20px 0;
+  }
+  .mode-section p:last-child { margin-bottom: 0; }
+  .screen-label {
+    color: #ffaa00;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .data-line {
+    color: #00ff8899;
+    font-size: 13px;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid #00d4ff22;
+    margin: 30px 0;
+  }
+  .source-list { counter-reset: src; list-style: none; margin-left: 0; }
+  .source-list li { counter-increment: src; margin-bottom: 8px; }
+  .source-list li::before {
+    content: "[" counter(src) "] ";
+    color: #00d4ff88;
+  }
+  .footer-note {
+    color: #c0d8e855;
+    font-size: 13px;
+    font-style: italic;
+    margin-top: 40px;
+    border-top: 1px solid #00d4ff11;
+    padding-top: 16px;
+  }
+</style>
+
+<h1>MOCR Projection Screen Displays
+  <span class="subtitle">Design Document — KSA Console Replica Suite</span>
+</h1>
+<p class="status-line">STATUS: STRETCH GOAL &nbsp;|&nbsp; DOCUMENT: DRAFT FOR REVIEW</p>
+
+<p>Design reference for implementing the five large front-wall projection displays and nine
+chronographic displays from the Apollo-era Mission Operations Control Room (MOCR 2).</p>
+<p>These are the "big boards" that dominated the front wall of Mission Control — the screens
+every flight controller looked up at. Adding them to the suite would complete the room.</p>
+
+<hr>
+
+<h2>Physical Layout</h2>
+<p>The front (west) wall of MOCR 2 had three tiers of displays:</p>
+
+<h3>Tier 1: Chronographic Displays (top)</h3>
+<p>Nine smaller displays mounted above the main screens, showing timing data:</p>
+<ul>
+  <li>GMT (Greenwich Mean Time)</li>
+  <li>MET / GET (Mission/Ground Elapsed Time)</li>
+  <li>TIG (Time of Ignition — countdown to next burn)</li>
+  <li>Event timers</li>
+  <li>REV (Revolution/orbit counter)</li>
+  <li>AOS / LOS (Acquisition/Loss of Signal countdowns)</li>
+  <li>Range to target</li>
+  <li>Retrofire countdown</li>
+</ul>
+
+<h3>Tier 2: Five Large Rear-Projection Screens (main)</h3>
+<p>Viewed left to right from the controllers' perspective:</p>
+
+<table>
+  <thead>
+    <tr><th>Position</th><th>Name / Role</th><th>Projection Type</th><th>Typical Content</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Screen 1 (far left)</td><td>Command History</td><td>Plotting / Eidophor</td><td>Vehicle command history, telemetry summary</td></tr>
+    <tr><td>Screen 2 (left)</td><td>Flight Plan</td><td>Plotting / Eidophor</td><td>Current flight plan page, procedures</td></tr>
+    <tr><td>Screen 3 (center)</td><td>"Ten by Twenty"</td><td>7-projector plotting</td><td>Vehicle position, ground track, trajectory</td></tr>
+    <tr><td>Screen 4 (right)</td><td>Television</td><td>Eidophor TV</td><td>Mission camera feeds, onboard TV</td></tr>
+    <tr><td>Screen 5 (far right)</td><td>Television</td><td>Eidophor TV</td><td>Network TV, recovery ops, alternate feeds</td></tr>
+  </tbody>
+</table>
+
+<p>The center screen measured <strong>10 feet tall by 20 feet wide</strong>. The four flanking screens were
+smaller. All five were rear-projected from the "Bat Cave" — a blacked-out projection room
+(36 ft wide × 65 ft long × 15 ft high) behind the screens.</p>
+
+<h3>Tier 3: Summary Display Projection Room ("Bat Cave")</h3>
+<p>Not visible to controllers. Housed the projection hardware:</p>
+<ul>
+  <li>5 seven-projector Xenon plotting display systems</li>
+  <li>7 large-screen Eidophor television projectors</li>
+  <li>Optical mirrors, cooling systems, slide changers</li>
+  <li>Manned by display operators who swapped slides and monitored equipment</li>
+</ul>
+
+<hr>
+
+<h2>Projection Technology</h2>
+
+<h3>Seven-Projector Plotting Display (Center Screen)</h3>
+<p>Each plotting display comprised seven projectors working in overlay:</p>
+<ol>
+  <li><strong>Background projector</strong> — Displayed the base map (world map, lunar surface, etc.)
+  from a 1-inch-square glass slide with metal film etching. Swapped between mission phases.</li>
+  <li><strong>Two spotting projectors</strong> — Imposed symbols (spacecraft icon, target markers) on the
+  map. Position driven by real-time trajectory data from the RTCC. Symbols physically moved
+  across the slide via servo mechanisms.</li>
+  <li><strong>Four scribing projectors</strong> — Used diamond-tipped styli to scratch through metalized
+  coating on glass slides, creating:
+    <ul>
+      <li>Ground track lines (the spacecraft's path over Earth)</li>
+      <li>Trajectory plots (ascent, descent, orbital paths)</li>
+      <li>Alphanumeric data (velocity, altitude, range annotations)</li>
+      <li>X-Y plots (altitude vs. range, etc.)</li>
+    </ul>
+  </li>
+</ol>
+<p>All illuminated by <strong>2500-watt Xenon lamps</strong>. The scribed lines appeared as light projected
+through the scratched-away metal coating — like an Etch-a-Sketch driven by IBM mainframes.</p>
+<p>Slides were built up in layers with colors obtained through <strong>dichroic filters</strong>. The composite
+image was far sharper than any video technology of the era.</p>
+
+<h3>Eidophor Television Projectors (Side Screens)</h3>
+<p>Quartz-lamp video projectors that bounced images off mirrors onto the screens. Used for:</p>
+<ul>
+  <li>Live television from spacecraft cameras</li>
+  <li>Network television coverage (launch, recovery)</li>
+  <li>CRT-generated telemetry displays (composite image: CRT numbers + slide overlay labels,
+  captured by CCTV camera and projected)</li>
+  <li>Any of the 350+ group display channels available to individual consoles</li>
+</ul>
+<p>The side screens were flexible — controllers could request specific display channels
+be put up on the big screens via the Display Operations Room.</p>
+
+<hr>
+
+<h2>Display Modes by Mission Phase</h2>
+<p>The center screen's content changed as the mission progressed. Each phase had a
+characteristic display. The side screens adapted as well, typically showing the most
+relevant telemetry, flight plan page, or television feed for the current phase.</p>
+
+<h3>Mode 1: Pre-Launch / Countdown</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Launch vehicle status display — Saturn V systems summary, countdown clock, hold status, weather data.</p>
+  <p><span class="screen-label">Left screens:</span> Flight plan page for launch phase, abort mode summary.</p>
+  <p><span class="screen-label">Right screens:</span> Television — pad camera views of the vehicle on the launch pad.</p>
+  <p><span class="screen-label">Clocks:</span> GMT, countdown to T-0, hold time if applicable.</p>
+</div>
+
+<h3>Mode 2: Launch / Ascent</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Ascent trajectory plot — altitude vs. downrange distance. The scribing projectors traced the actual ascent path in real time against a pre-plotted nominal trajectory. Abort mode boundaries (Mode I, II, III, IV) were shown as regions on the plot. The spotting projector tracked the vehicle icon.</p>
+  <p><span class="screen-label">Left screens:</span> Vehicle command history, abort option summary.</p>
+  <p><span class="screen-label">Right screens:</span> Television — tracking camera views of the ascending vehicle.</p>
+  <p><span class="screen-label">Clocks:</span> GET counting up from T-0, time to MECO, time to staging events.</p>
+</div>
+
+<h3>Mode 3: Earth Orbit</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Mercator projection world map with:</p>
+  <ul>
+    <li>Ground track — a sine-wave pattern showing the orbital path over Earth</li>
+    <li>Three orbits visible (current + two future passes)</li>
+    <li>Tracking station locations marked (MSFN ground stations)</li>
+    <li>Spacecraft position icon moving along the track in real time</li>
+    <li>AOS/LOS markers for each station pass</li>
+    <li>Orbital parameters annotated (apogee, perigee, period, inclination)</li>
+  </ul>
+  <p>This was the iconic "sine wave over the world map" display seen in most Apollo-era Mission Control photographs.</p>
+  <p><span class="screen-label">Left screens:</span> Flight plan, upcoming maneuver parameters, systems status summary.</p>
+  <p><span class="screen-label">Right screens:</span> Television — onboard camera when available, otherwise network coverage.</p>
+  <p><span class="screen-label">Clocks:</span> GET, REV counter, AOS/LOS for current station, TIG for next burn.</p>
+</div>
+
+<h3>Mode 4: Trans-Lunar Injection (TLI) Burn</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Burn monitoring display — trajectory plot showing departure from Earth orbit. Plotted parameters likely included velocity gained, remaining delta-V, cutoff predictions. Vehicle icon tracked along the planned trajectory.</p>
+  <p><span class="screen-label">Left screens:</span> TLI burn parameters, abort options (free-return trajectory data).</p>
+  <p><span class="screen-label">Right screens:</span> Television if available, otherwise telemetry summary.</p>
+  <p><span class="screen-label">Clocks:</span> GET, TIG countdown, burn duration timer.</p>
+</div>
+
+<h3>Mode 5: Translunar Coast</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Earth-Moon trajectory plot — a schematic showing the spacecraft's position along the translunar path, with Earth at one end and Moon at the other. Distance markers, velocity annotations, midcourse correction opportunities marked. <span class="inferred">[INFERRED]</span> — specific layout unknown, but the display had to convey position between two bodies rather than over Earth's surface.</p>
+  <p><span class="screen-label">Left screens:</span> Flight plan, consumables timeline, midcourse correction planning.</p>
+  <p><span class="screen-label">Right screens:</span> Television — onboard TV broadcasts when scheduled.</p>
+  <p><span class="screen-label">Clocks:</span> GET, time to LOI, distance to Moon.</p>
+</div>
+
+<h3>Mode 6: Lunar Orbit Insertion (LOI)</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Burn monitoring display — LOI trajectory showing approach to Moon, capture into lunar orbit. Plotted against nominal trajectory.</p>
+  <p><span class="screen-label">Left screens:</span> LOI burn parameters, abort options.</p>
+  <p><span class="screen-label">Right screens:</span> Telemetry summary or television.</p>
+  <p><span class="screen-label">Clocks:</span> GET, TIG countdown, burn duration, time to AOS after far-side pass.</p>
+</div>
+
+<h3>Mode 7: Lunar Orbit</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Lunar ground track — <span class="inferred">[INFERRED]</span> Mercator or polar projection of the lunar surface with the orbital path shown, landing site marked, AOS/LOS markers for communications (far side of Moon = loss of signal). Orbital parameters annotated.</p>
+  <p><span class="screen-label">Left screens:</span> Flight plan, undocking/separation checklist, DOI parameters.</p>
+  <p><span class="screen-label">Right screens:</span> Television — lunar surface views when available.</p>
+  <p><span class="screen-label">Clocks:</span> GET, REV counter, AOS/LOS (lunar far-side passes), TIG for DOI/PDI.</p>
+</div>
+
+<h3>Mode 8: Powered Descent / Landing</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Descent trajectory plot — altitude vs. downrange distance to the landing site. The Eidophor projections are confirmed to have shown the Apollo 11 LM descent stage trajectory during the first manned lunar landing. The scribing projectors traced the actual descent path against a pre-plotted nominal profile. Vehicle icon tracked in real time. Altitude, velocity, fuel remaining annotations updated every 2 seconds by display operators.</p>
+  <p>This was the display visible in the famous "landing" photographs and footage.</p>
+  <p><span class="screen-label">Left screens:</span> LM systems status, abort staging parameters.</p>
+  <p><span class="screen-label">Right screens:</span> Television — LM cabin camera if available (Apollo 11 had no landing camera; later missions did).</p>
+  <p><span class="screen-label">Clocks:</span> GET, altitude, descent rate, fuel remaining time.</p>
+</div>
+
+<h3>Mode 9: Lunar Surface / EVA</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> <span class="inferred">[INFERRED]</span> Lunar surface map showing EVA traverse, or mission timeline display. The center screen's content during surface operations is poorly documented. It may have shown a surface map with planned EVA routes and the astronauts' position, or it may have reverted to a mission timeline view.</p>
+  <p><span class="screen-label">Left screens:</span> EVA checklist, timeline, consumables.</p>
+  <p><span class="screen-label">Right screens:</span> Television — the lunar surface TV camera (the iconic live footage seen worldwide was also displayed here for controllers).</p>
+  <p><span class="screen-label">Clocks:</span> GET, EVA elapsed time, PLSS consumables time remaining.</p>
+</div>
+
+<h3>Mode 10: Ascent / Rendezvous</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Rendezvous trajectory plot — LM ascent path relative to CSM orbit. Plotted as altitude vs. time or altitude vs. range, showing the catch-up geometry. Terminal phase intercept (TPI) and braking gates marked.</p>
+  <p><span class="screen-label">Left screens:</span> Rendezvous checklist, relative motion parameters.</p>
+  <p><span class="screen-label">Right screens:</span> Television — docking camera views when available.</p>
+  <p><span class="screen-label">Clocks:</span> GET, time to TPI, range to CSM, closing velocity.</p>
+</div>
+
+<h3>Mode 11: Trans-Earth Injection (TEI) / Trans-Earth Coast</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Departure trajectory from lunar orbit, transitioning to Earth-Moon return path display (reverse of Mode 5). Midcourse correction opportunities marked.</p>
+  <p><span class="screen-label">Left screens:</span> TEI burn parameters, entry corridor predictions.</p>
+  <p><span class="screen-label">Right screens:</span> Television — onboard TV broadcasts.</p>
+  <p><span class="screen-label">Clocks:</span> GET, time to entry interface, distance to Earth.</p>
+</div>
+
+<h3>Mode 12: Entry / Reentry</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Entry trajectory plot — altitude vs. range to landing point, or ground track showing the entry corridor over the Pacific. Entry angle, g-loading, and range to splashdown annotated. Skip-out boundaries shown.</p>
+  <p><span class="screen-label">Left screens:</span> Entry parameters, recovery zone weather, landing point prediction.</p>
+  <p><span class="screen-label">Right screens:</span> Television — recovery ship cameras, helicopter views.</p>
+  <p><span class="screen-label">Clocks:</span> GET, time to entry interface, time to blackout, time to splashdown.</p>
+</div>
+
+<h3>Mode 13: Recovery</h3>
+<div class="mode-section">
+  <p><span class="screen-label">Center screen:</span> Recovery zone map — splashdown point, recovery ship positions, helicopter tracks. <span class="inferred">[INFERRED]</span> May have been handled by ROCR (Recovery Operations Control Room) displays rather than the MOCR screens at this phase.</p>
+  <p><span class="screen-label">Left screens:</span> Post-landing checklist, crew status.</p>
+  <p><span class="screen-label">Right screens:</span> Television — recovery helicopter and ship cameras (the iconic footage of capsule floating under parachutes, frogmen attaching flotation collar).</p>
+  <p><span class="screen-label">Clocks:</span> GET, time since splashdown.</p>
+</div>
+
+<hr>
+
+<h2>Display Modes Summary Table</h2>
+<table>
+  <thead>
+    <tr><th>#</th><th>Phase</th><th>Center Screen</th><th>Update Rate</th><th>Confirmed?</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Pre-Launch</td><td>Launch vehicle status</td><td>Static/manual</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>2</td><td>Ascent</td><td>Altitude vs. range trajectory</td><td>Real-time scribe</td><td class="confirmed">Confirmed</td></tr>
+    <tr><td>3</td><td>Earth Orbit</td><td>Mercator world map + ground track</td><td>Real-time scribe</td><td class="confirmed">Confirmed</td></tr>
+    <tr><td>4</td><td>TLI Burn</td><td>Burn trajectory plot</td><td>Real-time scribe</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>5</td><td>Translunar Coast</td><td>Earth-Moon transfer plot</td><td>Periodic update</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>6</td><td>LOI Burn</td><td>Approach/capture trajectory</td><td>Real-time scribe</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>7</td><td>Lunar Orbit</td><td>Lunar surface ground track</td><td>Real-time scribe</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>8</td><td>Powered Descent</td><td>Altitude vs. range descent plot</td><td>~2 sec scribe</td><td class="confirmed">Confirmed</td></tr>
+    <tr><td>9</td><td>Lunar Surface/EVA</td><td>Surface map or timeline</td><td>Manual/periodic</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>10</td><td>Ascent/Rendezvous</td><td>Rendezvous trajectory plot</td><td>Real-time scribe</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>11</td><td>TEI / Trans-Earth</td><td>Return trajectory plot</td><td>Periodic update</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>12</td><td>Entry</td><td>Entry corridor / range plot</td><td>Real-time scribe</td><td class="inferred">[INFERRED]</td></tr>
+    <tr><td>13</td><td>Recovery</td><td>Recovery zone map</td><td>Manual</td><td class="inferred">[INFERRED]</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>KSA Implementation Plan</h2>
+
+<h3>What Maps to Real Solar System / KSA</h3>
+<p>The KSA-Bridge telemetry suite can support several of these display modes directly:</p>
+
+<table>
+  <thead>
+    <tr><th>MOCR Mode</th><th>KSA Equivalent</th><th>Data Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Earth Orbit ground track</td><td>Orbital ground track over Earth</td><td><code>ksa/telemetry/orbit</code> + <code>ksa/telemetry/vehicle</code></td></tr>
+    <tr><td>Ascent trajectory</td><td>Altitude vs. downrange plot</td><td><code>ksa/telemetry/altitude</code> + derived range</td></tr>
+    <tr><td>Powered descent</td><td>Altitude vs. range to target</td><td><code>ksa/telemetry/altitude</code> + <code>ksa/telemetry/velocity</code></td></tr>
+    <tr><td>Burn monitoring</td><td>Delta-V plot during maneuver</td><td><code>ksa/telemetry/maneuver</code> + <code>ksa/telemetry/velocity</code></td></tr>
+    <tr><td>Rendezvous</td><td>Relative motion plot</td><td>Would need new telemetry topics</td></tr>
+    <tr><td>Television</td><td>Camera view</td><td>Screenshot capture or IVA view</td></tr>
+  </tbody>
+</table>
+
+<h3>Proposed Implementation Screens</h3>
+<p>Each screen would be a standalone HTML page (consistent with VISION.md — no frameworks), subscribing to MQTT telemetry and rendering via Canvas or SVG.</p>
+
+<h4>Screen A: Ground Track Map (Priority 1)</h4>
+<div class="mode-section">
+  <p>The signature MOCR display. Mercator projection of Earth with:</p>
+  <ul>
+    <li>Sine-wave orbital ground track (current orbit + 2 future)</li>
+    <li>Spacecraft icon moving in real time</li>
+    <li>Ground station markers (if KSA defines comm stations)</li>
+    <li>AOS/LOS shading for communication coverage</li>
+    <li>Orbital parameters overlay (Ap, Pe, Inc, Period)</li>
+    <li>Day/night terminator line</li>
+  </ul>
+  <p class="data-line">Data: ksa/telemetry/orbit, ksa/telemetry/vehicle, ksa/telemetry/altitude</p>
+  <p class="data-line">Rendering: HTML Canvas or SVG, Mercator projection math, real-time animation</p>
+  <p class="data-line">Reference: This is the display seen in virtually every MOCR photograph</p>
+</div>
+
+<h4>Screen B: Ascent/Descent Trajectory Plot (Priority 2)</h4>
+<div class="mode-section">
+  <p>Altitude vs. downrange distance plot with:</p>
+  <ul>
+    <li>Pre-plotted nominal trajectory (thin line)</li>
+    <li>Actual trajectory traced in real time (bright line, simulating the scribe)</li>
+    <li>Abort mode boundaries (ascent) or terrain profile (descent)</li>
+    <li>Vehicle icon at current position</li>
+    <li>Velocity and altitude annotations updating in real time</li>
+  </ul>
+  <p class="data-line">Data: ksa/telemetry/altitude, ksa/telemetry/velocity, derived downrange</p>
+  <p class="data-line">Rendering: Canvas, scrolling plot, "scribe" animation effect (line drawn progressively)</p>
+  <p class="data-line">Dual use: Works for both launch ascent and powered landing descent</p>
+</div>
+
+<h4>Screen C: Transfer Trajectory Plot (Priority 3)</h4>
+<div class="mode-section">
+  <p>Earth-Moon transfer schematic:</p>
+  <ul>
+    <li>Earth at one side, Moon at the other</li>
+    <li>Curved transfer arc with spacecraft icon</li>
+    <li>Distance/velocity annotations</li>
+    <li>Midcourse correction opportunity markers</li>
+    <li>SOI boundary indicators</li>
+  </ul>
+  <p class="data-line">Data: ksa/telemetry/orbit, ksa/telemetry/velocity, ksa/telemetry/altitude</p>
+  <p class="data-line">Rendering: Canvas, schematic (not to scale), icon animation</p>
+</div>
+
+<h4>Screen D: Flight Plan / Telemetry Summary (Priority 4)</h4>
+<div class="mode-section">
+  <p>The "left screens" equivalent — a text-heavy display showing:</p>
+  <ul>
+    <li>Current flight plan step and next steps</li>
+    <li>Command history log (recent MQTT messages)</li>
+    <li>Key telemetry summary (selectable channel, mirroring any console's data)</li>
+    <li>Maneuver planning parameters</li>
+  </ul>
+  <p class="data-line">Data: All ksa/telemetry/# topics, aggregated</p>
+  <p class="data-line">Rendering: DOM text rendering (styled like CRT), scrolling log</p>
+</div>
+
+<h4>Screen E: Television / Camera Feed (Priority 5)</h4>
+<div class="mode-section">
+  <p>The "right screen" equivalent — would display:</p>
+  <ul>
+    <li>Embedded video/image feed if screenshot capture is available</li>
+    <li>Placeholder "NO SIGNAL" or "STANDBY" pattern when no feed</li>
+    <li>Could potentially embed a simulator window capture via WebRTC or similar</li>
+    <li>Mission event photo gallery as fallback</li>
+  </ul>
+  <p class="data-line">Data: External feed or static content</p>
+  <p class="data-line">Rendering: Video element or image with periodic refresh</p>
+</div>
+
+<h4>Screen F: Chronographic Clock Array (Priority 1)</h4>
+<div class="mode-section">
+  <p>The nine clocks above the main screens. Already sketched in index.html. Would become a live, functional display:</p>
+  <ul>
+    <li>GMT (real wall clock time)</li>
+    <li>GET / MET (from ksa/telemetry/mission-time)</li>
+    <li>TIG (countdown to next maneuver from ksa/telemetry/maneuver)</li>
+    <li>REV (orbit counter, derived from period and MET)</li>
+    <li>AOS / LOS (derived from orbital position and ground station geometry)</li>
+    <li>Event timers (configurable)</li>
+  </ul>
+  <p class="data-line">Data: ksa/telemetry/mission-time, ksa/telemetry/maneuver, ksa/telemetry/orbit</p>
+  <p class="data-line">Rendering: Large seven-segment or fixed-width digit display, Apollo clock aesthetic</p>
+</div>
+
+<hr>
+
+<h2>Visual Design Notes</h2>
+
+<h3>Scribe Effect</h3>
+<p>The original displays drew trajectory lines by physically scratching metal off glass. The digital equivalent should simulate this:</p>
+<ul>
+  <li>Lines drawn progressively, not all at once</li>
+  <li>Slight glow at the drawing point (the "stylus")</li>
+  <li>Older portions of the trace slightly dimmer</li>
+  <li>Occasional imperfection — the real scribes sometimes produced squiggly lines when malfunctioning (per Paul Dye's account)</li>
+</ul>
+
+<h3>Color Palette</h3>
+<p>The original plotting displays used dichroic filters for color separation. Observed colors in photographs and restoration references:</p>
+<ul>
+  <li><strong style="color:#00d4ff">White/bright cyan</strong> — primary trajectory traces and text</li>
+  <li><strong style="color:#00ff88">Green</strong> — ground track lines, map grid</li>
+  <li><strong style="color:#ffaa00">Yellow/amber</strong> — spacecraft icon, target markers</li>
+  <li><strong style="color:#ff4444">Red</strong> — abort boundaries, danger zones</li>
+  <li>Background: deep black (projected onto dark screens)</li>
+</ul>
+<p>These map well to the existing console palette (<code>#00d4ff</code> blue, <code>#00ff88</code> green, <code>#ffaa00</code> amber, <code>#ff4444</code> red on <code>#000011</code> background).</p>
+
+<h3>Screen Aspect Ratio</h3>
+<p>The center "ten by twenty" was approximately 2:1 landscape (10 ft tall × 20 ft wide). The side screens were closer to 4:3. For the web implementation, responsive layouts should target these proportions but adapt to the user's actual screen.</p>
+
+<hr>
+
+<h2>Open Research Questions</h2>
+<ol>
+  <li><strong>Exact screen assignments per mission phase.</strong> We know the center screen showed trajectory plots and the side screens showed TV and telemetry, but the specific assignment of screens 1–5 for each phase (launch, TLI, LOI, etc.) is not definitively documented in publicly available sources. The Hendrickson 1967 paper ("Real-Time Displays in Mission Control Center") may contain this detail but is not freely accessible online.</li>
+  <li><strong>Powered descent display layout.</strong> The lunar landing trajectory display is the most iconic, but the exact graphical layout (altitude vs. range-rate? altitude vs. downrange? what abort boundaries were drawn?) varies across accounts. High-resolution photographs of the actual display during Apollo 11 would settle this.</li>
+  <li><strong>Earth orbit rendezvous plots.</strong> During Gemini and early Apollo Earth orbit operations, the plotting displays showed rendezvous trajectories. The exact format (polar? Cartesian? relative motion?) is unclear from available sources.</li>
+  <li><strong>Eidophor content sources.</strong> The Eidophor TV projectors could display any video signal. During Apollo, what specific camera feeds and data channels were routed to them? Was it always network TV pool feeds, or did MCC have dedicated camera angles?</li>
+  <li><strong>Color capabilities of the plotting system.</strong> Sources confirm dichroic filters were used, but the exact number of simultaneous colors and whether colors were switchable per-display or fixed per-projector is unclear. The 4 scribing + 2 spotting + 1 background projector arrangement suggests up to 7 color layers, but practical usage may have been simpler.</li>
+  <li><strong>Clock display formats.</strong> The nine chronographic clocks above the screens are visible in photographs, but the exact label and function of each clock position varied by mission phase. Some sources mention GMT, GET, TIG, and countdown clocks, but the full set of nine assignments is not confirmed.</li>
+  <li><strong>TLI and LOI trajectory plot formats.</strong> These would have been the most complex 3D-to-2D projection problems for the plotting system. How were the translunar and transearth trajectories represented on a 2D display? Earth-Moon line profile view? Orbital plane projection?</li>
+</ol>
+
+<hr>
+
+<h2>Sources</h2>
+<ol class="source-list">
+  <li><strong>Hackaday</strong> — "The Projectors of Apollo Mission Control" (2019). Detailed breakdown of the 7-projector plotting display system, Xenon lamps, diamond-tipped styli, and metalized glass slide technology.</li>
+  <li><strong>Ironflight.com</strong> — Eidophor memories from a former MCC display engineer. First-hand account of the Eidophor television projectors, maintenance challenges, and the "Bat Cave" rear-projection room (36 × 65 × 15 ft).</li>
+  <li><strong>Hendrickson, C.L. (1967)</strong> — "Real-Time Displays in Mission Control Center." Technical paper describing the display system architecture. Referenced in multiple secondary sources but not freely available online. Likely contains definitive screen assignment tables.</li>
+  <li><strong>CollectSpace forums</strong> — Multiple threads discussing MOCR display restoration, including photographs of the projection screens during various mission phases and discussion of display modes.</li>
+  <li><strong>Wikipedia</strong> — "Christopher C. Kraft Jr. Mission Control Center" article. Overview of the facility including the five projection screens and their general purpose.</li>
+  <li><strong>Ars Technica</strong> — Lee Hutchinson's extensive series on the restoration of the Apollo Mission Control Room (2019). Includes photographs and descriptions of the front wall displays during different mission phases.</li>
+  <li><strong>Paul Dye</strong> — Former NASA Flight Director. Blog posts and public talks describing the display systems from an operator's perspective, including anecdotes about scribe malfunctions and display operator workflows.</li>
+  <li><strong>NASA History Division</strong> — Various Apollo mission reports and press kits that reference the MOCR display configuration for specific missions.</li>
+</ol>
+
+<p class="footer-note">This document is a living reference for the KSA MOCR Console Replica Suite projection
+screen implementation. It will be updated as new historical sources are discovered and
+as implementation progresses.</p>
+
+</body>
+</html>
